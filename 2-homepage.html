@@ -310,28 +310,56 @@
                   success: function(videos){
                     $('#carouselExampleControls2 .carousel-inner').empty();
                     
-                    // Grouper les vidéos par 4 pour chaque slide
-                    for (let i = 0; i < videos.length; i += 4) {
-                      const activeClass = i === 0 ? 'active' : '';
-                      // Utiliser modulo pour faire une boucle circulaire si nécessaire
-                      const video1 = videos[i % videos.length];
-                      const video2 = videos[(i + 1) % videos.length];
-                      const video3 = videos[(i + 2) % videos.length];
-                      const video4 = videos[(i + 3) % videos.length];
-                      
-                      const carouselItem = `
-                        <div class="carousel-item ${activeClass}">
-                          <div class="row mx-auto">
-                            ${createVideoCard(video1, 'col-12 col-sm-6 col-md-6 col-lg-3')}
-                            ${createVideoCard(video2, 'col-12 col-sm-6 col-md-6 col-lg-3 d-none d-sm-block')}
-                            ${createVideoCard(video3, 'col-12 col-sm-6 col-md-6 col-lg-3 d-none d-md-block')}
-                            ${createVideoCard(video4, 'col-12 col-sm-6 col-md-6 col-lg-3 d-none d-lg-block')}
-                          </div>
+                   
+                    let allCards = '';
+                    videos.forEach(function(video) {
+                      allCards += createVideoCard(video, 'carousel-card col-12 col-sm-6 col-lg-3');
+                    });
+                    
+                    const carouselItem = `
+                      <div class="carousel-item active">
+                        <div class="row flex-nowrap mx-auto" id="cards-container">
+                          ${allCards}
                         </div>
-                      `;
-                      
-                      $('#carouselExampleControls2 .carousel-inner').append(carouselItem);
+                      </div>
+                    `;
+                    
+                    $('#carouselExampleControls2 .carousel-inner').html(carouselItem);
+                    
+                   
+                    let currentIndex = 0;
+                    const totalCards = videos.length;
+                    const cardsToShow = 4; 
+                    
+                   
+                    function updateCarousel() {
+                      const cardWidth = $('.carousel-card').first().outerWidth(true);
+                      const offset = -currentIndex * cardWidth;
+                      $('#cards-container').css('transform', `translateX(${offset}px)`);
                     }
+                    
+                    $('#carouselExampleControls2').parent().find('.carousel-control-next').off('click').on('click', function(e) {
+                      e.preventDefault();
+                      if (currentIndex < totalCards - cardsToShow) {
+                        currentIndex++;
+                        updateCarousel();
+                      }
+                    });
+                    
+                    $('#carouselExampleControls2').parent().find('.carousel-control-prev').off('click').on('click', function(e) {
+                      e.preventDefault();
+                      if (currentIndex > 0) {
+                        currentIndex--;
+                        updateCarousel();
+                      }
+                    });
+                    
+                    $('#cards-container').css({
+                      'transition': 'transform 0.6s ease',
+                      'overflow': 'visible'
+                    });
+                    
+                    $('#carouselExampleControls2 .carousel-inner').css('overflow', 'hidden');
                   },
                   error: function(xhr, status, error) {
                     $('#carouselExampleControls2 .carousel-inner').html('<p class="text-center text-danger">Error loading tutorials</p>');
